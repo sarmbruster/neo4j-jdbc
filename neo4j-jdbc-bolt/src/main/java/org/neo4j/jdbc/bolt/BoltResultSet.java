@@ -19,6 +19,7 @@
  */
 package org.neo4j.jdbc.bolt;
 
+import org.neo4j.driver.internal.types.InternalTypeSystem;
 import org.neo4j.driver.internal.value.*;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.StatementResult;
@@ -31,6 +32,7 @@ import org.neo4j.jdbc.*;
 import org.neo4j.jdbc.impl.ListArray;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -331,14 +333,55 @@ public class BoltResultSet extends ResultSet implements Loggable {
 
 	@Override public Array getArray(int columnIndex) throws SQLException {
 		checkClosed();
-		List<Object> list = this.fetchValueFromIndex(columnIndex).asList();
-		return new ListArray(list, Array.getObjectType(list.get(0)));
+		Object res = this.fetchValueFromIndex(columnIndex);
+		List list = this.objectToList(res);
+		return new ListArray(list, Array.getListObjectType(list));
 	}
 
 	@Override public Array getArray(String columnLabel) throws SQLException {
 		checkClosed();
-		List list = this.fetchValueFromLabel(columnLabel).asList();
-		return new ListArray(list, Array.getObjectType(list.get(0)));
+		Object res = this.fetchValueFromLabel(columnLabel);
+		List list = this.objectToList(res);
+		return new ListArray(list, Array.getListObjectType(list));
+	}
+
+	/**
+	 * Convert an Object to a list.
+	 *
+	 * @param obj The object to convert (must be a list of Node/Relationship or a Path
+	 * @return The corresponding List
+	 * @throws SQLException if object cannot be cast to a list
+	 */
+	private List objectToList(Object obj) throws SQLException {
+		List res = null;
+
+		if (ValueAdapter.class.isInstance(obj) && ((ValueAdapter) obj).type() == InternalTypeSystem.TYPE_SYSTEM.LIST()) {
+			List list = ((ValueAdapter) obj).asList();
+
+			if (list != null && list.size() > 0) {
+				// if it's an object, we convert it as a Map
+				if (Array.getObjectType(list.get(0)) == Types.JAVA_OBJECT) {
+					List listOfObject = new ArrayList();
+					for (Object ob : list) {
+						listOfObject.add(generateObject(ob));
+					}
+					res = listOfObject;
+				} else {
+					res = list;
+				}
+			} else {
+				res = new ArrayList();
+			}
+		}
+		if (ValueAdapter.class.isInstance(obj) && ((ValueAdapter) obj).type() == InternalTypeSystem.TYPE_SYSTEM.PATH()) {
+			res = (List) generateObject(((ValueAdapter) obj).asPath());
+		}
+
+		if (res == null) {
+			throw new SQLException(obj.getClass().getName() + " can be cast to a list");
+		}
+
+		return res;
 	}
 
 	@Override public double getDouble(String columnLabel) throws SQLException {

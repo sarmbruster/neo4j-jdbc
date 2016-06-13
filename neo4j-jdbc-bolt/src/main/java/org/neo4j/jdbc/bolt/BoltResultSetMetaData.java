@@ -86,13 +86,13 @@ public class BoltResultSetMetaData extends ResultSetMetaData implements Loggable
 			return Double.class.getName();
 		}
 		if (InternalTypeSystem.TYPE_SYSTEM.NODE().equals(type)) {
-			return Object.class.getName();
+			return Map.class.getName();
 		}
 		if (InternalTypeSystem.TYPE_SYSTEM.RELATIONSHIP().equals(type)) {
-			return Object.class.getName();
+			return Map.class.getName();
 		}
 		if (InternalTypeSystem.TYPE_SYSTEM.PATH().equals(type)) {
-			return Object.class.getName();
+			return List.class.getName();
 		}
 		if (InternalTypeSystem.TYPE_SYSTEM.MAP().equals(type)) {
 			return Map.class.getName();

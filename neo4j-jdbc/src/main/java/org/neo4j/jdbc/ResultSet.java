@@ -104,6 +104,16 @@ public abstract class ResultSet implements java.sql.ResultSet {
 		return statement;
 	}
 
+	@Override public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
+		checkClosed();
+		return (T) this.getObject(columnIndex);
+	}
+
+	@Override public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
+		checkClosed();
+		return (T) this.getObject(columnLabel);
+	}
+
 	/*-----------------------------*/
 	/*       Abstract method       */
 	/*-----------------------------*/
@@ -789,14 +799,6 @@ public abstract class ResultSet implements java.sql.ResultSet {
 	}
 
 	@Override public void updateNClob(String columnLabel, Reader reader) throws SQLException {
-		throw ExceptionBuilder.buildUnsupportedOperationException();
-	}
-
-	@Override public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
-		throw ExceptionBuilder.buildUnsupportedOperationException();
-	}
-
-	@Override public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
 		throw ExceptionBuilder.buildUnsupportedOperationException();
 	}
 

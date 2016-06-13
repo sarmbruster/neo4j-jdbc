@@ -84,19 +84,28 @@ public abstract class Array implements java.sql.Array {
 		throw new SQLFeatureNotSupportedException("Feature not supported");
 	}
 
-	public static int getObjectType(Object obj){
+	public static int getObjectType(Object obj) {
 		int type;
 
-		if(obj instanceof String){
+		if (obj instanceof String) {
 			type = Types.VARCHAR;
-		} else if(obj instanceof Long){
+		} else if (obj instanceof Long) {
 			type = Types.INTEGER;
-		} else if(obj instanceof Boolean) {
+		} else if (obj instanceof Boolean) {
 			type = Types.BOOLEAN;
-		} else if(obj instanceof Double){
+		} else if (obj instanceof Double) {
 			type = Types.DOUBLE;
 		} else {
 			type = Types.JAVA_OBJECT;
+		}
+
+		return type;
+	}
+
+	public static int getListObjectType(List list) {
+		int type = Types.JAVA_OBJECT;
+		if (list != null && list.size() > 0) {
+			type = Array.getObjectType(list.get(0));
 		}
 
 		return type;

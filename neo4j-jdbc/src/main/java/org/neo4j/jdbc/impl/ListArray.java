@@ -24,6 +24,7 @@ import org.neo4j.jdbc.Array;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author AgileLARUS
@@ -33,8 +34,6 @@ public class ListArray extends Array {
 
 	private List list;
 	private int  type;
-
-
 
 	public ListArray(List list, int type) {
 		this.list = list;
@@ -73,7 +72,7 @@ public class ListArray extends Array {
 	}
 
 	@Override public Object getArray() throws SQLException {
-		if(!TYPES_SUPPORTED.contains(this.type)) {
+		if (!TYPES_SUPPORTED.contains(this.type)) {
 			throw new SQLException("Type " + this.type + " not supported");
 		}
 		Object result;
@@ -88,11 +87,20 @@ public class ListArray extends Array {
 			} else if (this.type == Types.DOUBLE) {
 				result = this.list.toArray(new Double[this.list.size()]);
 			} else if (this.type == Types.JAVA_OBJECT) {
-				result = this.list.toArray(new Object[this.list.size()]);
+				result = new Object[0];
+				// We have 3 kind of Object in Neo4j : Node (Map), Relationship (Map), Path (List)
+				if (this.list != null && this.list.size() > 0) {
+					if (this.list.get(0) instanceof Map) {
+						result = this.list.toArray(new Map[this.list.size()]);
+					}
+					if (this.list.get(0) instanceof List) {
+						result = this.list.toArray(new List[this.list.size()]);
+					}
+				}
 			} else {
 				throw new SQLException("Type " + this.type + " not supported");
 			}
-		} catch (ArrayStoreException e){
+		} catch (ArrayStoreException e) {
 			throw new SQLException(e);
 		}
 
