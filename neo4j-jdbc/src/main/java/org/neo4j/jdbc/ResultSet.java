@@ -40,6 +40,20 @@ public abstract class ResultSet implements java.sql.ResultSet {
 	 */
 	protected boolean isClosed = false;
 
+	/**
+	 * Statement that have produced this ResultSet.
+	 */
+	protected Statement statement;
+
+	/**
+	 * Default constructor.
+	 *
+	 * @param statement Statement that have produced this ResultSet.
+	 */
+	public ResultSet(Statement statement) {
+		this.statement = statement;
+	}
+
 
 	/*----------------------------------------*/
 	/*       Some useful, check method        */
@@ -84,6 +98,10 @@ public abstract class ResultSet implements java.sql.ResultSet {
 
 	@Override public void clearWarnings() throws SQLException {
 		checkClosed();
+	}
+
+	@Override public java.sql.Statement getStatement() throws SQLException {
+		return statement;
 	}
 
 	/*-----------------------------*/
@@ -491,10 +509,6 @@ public abstract class ResultSet implements java.sql.ResultSet {
 	}
 
 	@Override public void moveToCurrentRow() throws SQLException {
-		throw ExceptionBuilder.buildUnsupportedOperationException();
-	}
-
-	@Override public java.sql.Statement getStatement() throws SQLException {
 		throw ExceptionBuilder.buildUnsupportedOperationException();
 	}
 

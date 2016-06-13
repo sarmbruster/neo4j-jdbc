@@ -21,14 +21,11 @@ package org.neo4j.jdbc.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.neo4j.jdbc.*;
-import org.neo4j.jdbc.Array;
-import org.neo4j.jdbc.ResultSet;
-import org.neo4j.jdbc.ResultSetMetaData;
-import org.neo4j.jdbc.Statement;
 import org.neo4j.jdbc.http.driver.Neo4jResult;
 import org.neo4j.jdbc.impl.ListArray;
 
-import java.sql.*;
+import java.sql.SQLDataException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -64,20 +61,16 @@ public class HttpResultSet extends ResultSet implements Loggable {
 	 */
 	private boolean wasNull = false;
 
-	/**
-	 * Statement that have produced this ResultSet.
-	 */
-	private Statement statement;
-
 	private boolean loggable;
 
 	/**
 	 * Default constructor.
 	 *
-	 * @param statement Statement of this resultset.
-	 * @param result A Neo4j query result.
+	 * @param statement Statement of this ResultSet.
+	 * @param result    A Neo4j query result.
 	 */
 	public HttpResultSet(Statement statement, Neo4jResult result) {
+		super(statement);
 		this.statement = statement;
 		this.result = result;
 		this.row = -1;
@@ -185,7 +178,7 @@ public class HttpResultSet extends ResultSet implements Loggable {
 	@Override public boolean getBoolean(int columnIndex) throws SQLException {
 		checkClosed();
 		Boolean result = (Boolean) get(columnIndex);
-		if(result == null)
+		if (result == null)
 			return false;
 		else
 			return result;
@@ -193,7 +186,7 @@ public class HttpResultSet extends ResultSet implements Loggable {
 
 	@Override public short getShort(int columnIndex) throws SQLException {
 		checkClosed();
-		if(getNumber(columnIndex) == null)
+		if (getNumber(columnIndex) == null)
 			return 0;
 		else
 			return getNumber(columnIndex).shortValue();
@@ -201,7 +194,7 @@ public class HttpResultSet extends ResultSet implements Loggable {
 
 	@Override public int getInt(int columnIndex) throws SQLException {
 		checkClosed();
-		if(getNumber(columnIndex) == null)
+		if (getNumber(columnIndex) == null)
 			return 0;
 		else
 			return getNumber(columnIndex).intValue();
@@ -209,7 +202,7 @@ public class HttpResultSet extends ResultSet implements Loggable {
 
 	@Override public long getLong(int columnIndex) throws SQLException {
 		checkClosed();
-		if(getNumber(columnIndex)== null)
+		if (getNumber(columnIndex) == null)
 			return 0;
 		else
 			return getNumber(columnIndex).longValue();
@@ -217,7 +210,7 @@ public class HttpResultSet extends ResultSet implements Loggable {
 
 	@Override public float getFloat(int columnIndex) throws SQLException {
 		checkClosed();
-		if(getNumber(columnIndex) == null)
+		if (getNumber(columnIndex) == null)
 			return 0;
 		else
 			return getNumber(columnIndex).floatValue();
@@ -225,7 +218,7 @@ public class HttpResultSet extends ResultSet implements Loggable {
 
 	@Override public double getDouble(int columnIndex) throws SQLException {
 		checkClosed();
-		if(getNumber(columnIndex) == null)
+		if (getNumber(columnIndex) == null)
 			return 0;
 		else
 			return getNumber(columnIndex).doubleValue();
@@ -324,6 +317,10 @@ public class HttpResultSet extends ResultSet implements Loggable {
 		return this.isClosed;
 	}
 
+	/*--------------------*/
+	/*       Logger       */
+	/*--------------------*/
+
 	@Override public boolean isLoggable() {
 		return this.loggable;
 	}
@@ -332,8 +329,4 @@ public class HttpResultSet extends ResultSet implements Loggable {
 		this.loggable = loggable;
 	}
 
-	@Override
-	public java.sql.Statement getStatement() throws SQLException {
-		return statement;
-	}
 }

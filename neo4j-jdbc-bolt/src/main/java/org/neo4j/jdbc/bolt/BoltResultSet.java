@@ -57,7 +57,6 @@ public class BoltResultSet extends ResultSet implements Loggable {
 	private boolean flattened = false;
 
 	private static final List<String> ACCEPTED_TYPES_FOR_FLATTENING = Arrays.asList("NODE", "RELATIONSHIP");
-	private Statement statement;
 
 	/**
 	 * Default constructor for this class, if no params are given or if some params are missing it uses the defaults.
@@ -69,9 +68,9 @@ public class BoltResultSet extends ResultSet implements Loggable {
 	 *                  <code>CONCUR_READ_ONLY</code>,
 	 */
 	public BoltResultSet(Statement statement, StatementResult iterator, int... params) {
-		this.statement = statement;
-		this.iterator = iterator;
+		super(statement);
 
+		this.iterator = iterator;
 		this.keys = new ArrayList<>();
 
 		if (this.iterator != null && this.iterator.hasNext() && this.iterator.peek() != null && this.flatteningTypes(this.iterator)) {
@@ -471,14 +470,6 @@ public class BoltResultSet extends ResultSet implements Loggable {
 		return this.generateObject(obj);
 	}
 
-	@Override public boolean isLoggable() {
-		return this.loggable;
-	}
-
-	@Override public void setLoggable(boolean loggable) {
-		this.loggable = loggable;
-	}
-
 	public StatementResult getIterator() {
 		return this.iterator;
 	}
@@ -487,7 +478,16 @@ public class BoltResultSet extends ResultSet implements Loggable {
 		return this.keys;
 	}
 
-	@Override public java.sql.Statement getStatement() throws SQLException {
-		return statement;
+	/*--------------------*/
+	/*       Logger       */
+	/*--------------------*/
+
+	@Override public boolean isLoggable() {
+		return this.loggable;
 	}
+
+	@Override public void setLoggable(boolean loggable) {
+		this.loggable = loggable;
+	}
+
 }

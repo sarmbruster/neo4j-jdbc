@@ -90,7 +90,7 @@ public class BoltStatement extends Statement implements Loggable {
 	}
 
 	private SQLException wrapException(ClientException e) {
-		return new SQLException(e.neo4jErrorCode()+": "+e.getMessage(),e);
+		return new SQLException(e.neo4jErrorCode() + ": " + e.getMessage(), e);
 	}
 
 	@Override public int executeUpdate(String sql) throws SQLException {
