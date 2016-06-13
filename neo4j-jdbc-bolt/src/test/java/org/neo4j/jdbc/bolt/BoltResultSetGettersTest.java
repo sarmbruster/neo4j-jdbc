@@ -19,8 +19,6 @@
  */
 package org.neo4j.jdbc.bolt;
 
-import org.neo4j.jdbc.ResultSet;
-import org.neo4j.jdbc.bolt.data.ResultSetData;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,6 +26,8 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.jdbc.ResultSet;
+import org.neo4j.jdbc.bolt.data.ResultSetData;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -179,24 +179,6 @@ public class BoltResultSetGettersTest {
 		resultSet.getString(2);
 	}
 
-	@Test public void getStringByLabelShouldReturnCorrectVirtualColumn() throws SQLException {
-		StatementResult statementResult = ResultSetData
-				.buildResultCursor(ResultSetData.KEYS_RECORD_LIST_MORE_ELEMENTS_NODES, ResultSetData.RECORD_LIST_MORE_ELEMENTS_NODES);
-		ResultSet resultSet = new BoltResultSet(null, statementResult);
-
-		resultSet.next();
-		assertEquals("value1", resultSet.getString("node.property1"));
-	}
-
-	@Test public void getStringByIndexShouldReturnCorrectVirtualColumn() throws SQLException {
-		StatementResult statementResult = ResultSetData
-				.buildResultCursor(ResultSetData.KEYS_RECORD_LIST_MORE_ELEMENTS_NODES, ResultSetData.RECORD_LIST_MORE_ELEMENTS_NODES);
-		ResultSet resultSet = new BoltResultSet(null, statementResult);
-
-		resultSet.next();
-		assertEquals("value1", resultSet.getString(5));
-	}
-
 	@Test public void getStringShouldReturnStringOnNode() throws SQLException {
 		StatementResult statementResult = ResultSetData
 				.buildResultCursor(ResultSetData.KEYS_RECORD_LIST_MORE_ELEMENTS_NODES, ResultSetData.RECORD_LIST_MORE_ELEMENTS_NODES);
@@ -320,26 +302,6 @@ public class BoltResultSetGettersTest {
 
 		resultSet.close();
 		resultSet.getInt(1);
-	}
-
-	@Test public void getIntByLabelShouldReturnCorrectVirtualColumn() throws SQLException {
-		StatementResult statementResult = ResultSetData
-				.buildResultCursor(ResultSetData.KEYS_RECORD_LIST_MORE_ELEMENTS_NODES, ResultSetData.RECORD_LIST_MORE_ELEMENTS_NODES);
-		ResultSet resultSet = new BoltResultSet(null, statementResult);
-
-		resultSet.next();
-		assertEquals(1, resultSet.getInt("node.id"));
-		assertEquals(1, resultSet.getInt("node.property2"));
-	}
-
-	@Test public void getIntByIndexShouldReturnCorrectVirtualColumn() throws SQLException {
-		StatementResult statementResult = ResultSetData
-				.buildResultCursor(ResultSetData.KEYS_RECORD_LIST_MORE_ELEMENTS_NODES, ResultSetData.RECORD_LIST_MORE_ELEMENTS_NODES);
-		ResultSet resultSet = new BoltResultSet(null, statementResult);
-
-		resultSet.next();
-		assertEquals(1, resultSet.getInt(2));
-		assertEquals(1, resultSet.getInt(4));
 	}
 
 	/*------------------------------*/
@@ -1145,24 +1107,6 @@ public class BoltResultSetGettersTest {
 
 		resultSet.close();
 		resultSet.getLong(7);
-	}
-
-	@Test public void getArrayByLabelShouldReturnCorrectVirtualColumn() throws SQLException {
-		StatementResult statementResult = ResultSetData
-				.buildResultCursor(ResultSetData.KEYS_RECORD_LIST_MORE_ELEMENTS_NODES, ResultSetData.RECORD_LIST_MORE_ELEMENTS_NODES);
-		ResultSet resultSet = new BoltResultSet(null, statementResult);
-
-		resultSet.next();
-		assertArrayEquals(new String[] { "label1", "label2" }, (String[]) resultSet.getArray("node.labels").getArray());
-	}
-
-	@Test public void getArrayByIndexShouldReturnCorrectVirtualColumn() throws SQLException {
-		StatementResult statementResult = ResultSetData
-				.buildResultCursor(ResultSetData.KEYS_RECORD_LIST_MORE_ELEMENTS_NODES, ResultSetData.RECORD_LIST_MORE_ELEMENTS_NODES);
-		ResultSet resultSet = new BoltResultSet(null, statementResult);
-
-		resultSet.next();
-		assertArrayEquals(new String[] { "label1", "label2" }, (String[]) resultSet.getArray(3).getArray());
 	}
 
 	/*------------------------------*/

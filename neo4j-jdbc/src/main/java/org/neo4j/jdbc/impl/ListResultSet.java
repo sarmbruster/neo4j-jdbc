@@ -38,6 +38,7 @@ public class ListResultSet extends org.neo4j.jdbc.ResultSet {
 	private List<String> keys;
 
 	public ListResultSet(List<List<Object>> list, List<String> keys) {
+		super(null);
 		this.list = list;
 		this.keys = keys;
 	}
@@ -58,13 +59,13 @@ public class ListResultSet extends org.neo4j.jdbc.ResultSet {
 		if (this.isClosed()) {
 			throw new SQLException("ResultSet already closed");
 		}
-		if(this.index >= this.list.size()){
+		if (this.index >= this.list.size()) {
 			throw new SQLException("ResultSet has no more rows");
 		}
 		if (columnIndex < 1 || columnIndex > this.list.get(this.index).size()) {
 			throw new SQLException("columnIndex out of bounds");
 		}
-		if(this.index == -1 ){
+		if (this.index == -1) {
 			throw new SQLException("ResultSet not pointing to existing row");
 		}
 		return this.list.get(index).get(columnIndex - 1);
@@ -74,13 +75,13 @@ public class ListResultSet extends org.neo4j.jdbc.ResultSet {
 		if (this.isClosed()) {
 			throw new SQLException("ResultSet already closed");
 		}
-		if(this.index >= this.list.size()){
+		if (this.index >= this.list.size()) {
 			throw new SQLException("ResultSet has no more rows");
 		}
 		if (this.keys.indexOf(columnLabel) == -1) {
 			throw new SQLException("columnIndex out of bounds");
 		}
-		if(this.index == -1 ){
+		if (this.index == -1) {
 			throw new SQLException("ResultSet not pointing to existing row");
 		}
 		return this.list.get(index).get(this.keys.indexOf(columnLabel));

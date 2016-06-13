@@ -28,7 +28,6 @@ import org.neo4j.jdbc.ResultSetMetaData;
 import org.neo4j.jdbc.bolt.data.ResultSetData;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
@@ -164,21 +163,4 @@ public class BoltResultSetMetaDataTest {
 		assertEquals("", resultSet.getCatalogName(1));
 	}
 
-	/*------------------------------*/
-	/*          flattening          */
-	/*------------------------------*/
-
-	@Test public void flatteningTestWorking() throws SQLException {
-		StatementResult resultCursor = ResultSetData
-				.buildResultCursor(ResultSetData.KEYS_RECORD_LIST_MORE_ELEMENTS_NODES, ResultSetData.RECORD_LIST_MORE_ELEMENTS_NODES);
-		ResultSetMetaData rsm = new BoltResultSetMetaData(resultCursor,
-				Arrays.asList(new String[] { "node", "node.id", "node.label", "node.property2", "node.property1" }));
-
-		assertEquals(5, rsm.getColumnCount());
-		assertEquals("node", rsm.getColumnLabel(1));
-		assertEquals("node.id", rsm.getColumnLabel(2));
-		assertEquals("node.label", rsm.getColumnLabel(3));
-		assertEquals("node.property2", rsm.getColumnLabel(4));
-		assertEquals("node.property1", rsm.getColumnLabel(5));
-	}
 }

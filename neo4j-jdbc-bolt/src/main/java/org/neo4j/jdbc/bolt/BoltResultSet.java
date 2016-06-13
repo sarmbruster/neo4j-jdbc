@@ -27,12 +27,14 @@ import org.neo4j.driver.v1.exceptions.value.Uncoercible;
 import org.neo4j.driver.v1.types.Node;
 import org.neo4j.driver.v1.types.Path;
 import org.neo4j.driver.v1.types.Relationship;
-import org.neo4j.driver.v1.util.Pair;
 import org.neo4j.jdbc.*;
 import org.neo4j.jdbc.impl.ListArray;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author AgileLARUS
@@ -53,15 +55,12 @@ public class BoltResultSet extends ResultSet implements Loggable {
 	public static final int DEFAULT_CONCURRENCY = CONCUR_READ_ONLY;
 	public static final int DEFAULT_HOLDABILITY = CLOSE_CURSORS_AT_COMMIT;
 
-	private boolean loggable  = false;
-	private boolean flattened = false;
-
-	private static final List<String> ACCEPTED_TYPES_FOR_FLATTENING = Arrays.asList("NODE", "RELATIONSHIP");
+	private boolean loggable = false;
 
 	/**
 	 * Default constructor for this class, if no params are given or if some params are missing it uses the defaults.
 	 *
-	 * @param statement
+	 * @param statement Statement that produce this ResultSet
 	 * @param iterator  The <code>StatementResult</code> of this set
 	 * @param params    At most three, type, concurrency and holdability.
 	 *                  The defaults are <code>TYPE_FORWARD_ONLY</code>,
@@ -73,27 +72,7 @@ public class BoltResultSet extends ResultSet implements Loggable {
 		this.iterator = iterator;
 		this.keys = new ArrayList<>();
 
-		if (this.iterator != null && this.iterator.hasNext() && this.iterator.peek() != null && this.flatteningTypes(this.iterator)) {
-			//Flatten the result
-			for (Pair<String, Value> pair : this.iterator.peek().fields()) {
-				keys.add(pair.key());
-				if (ACCEPTED_TYPES_FOR_FLATTENING.get(0).equals(pair.value().type().name())) {
-					keys.add(pair.key() + ".id");
-					keys.add(pair.key() + ".labels");
-					for (String key : pair.value().asNode().keys()) {
-						keys.add(pair.key() + "." + key);
-					}
-				} else if (ACCEPTED_TYPES_FOR_FLATTENING.get(1).equals(pair.value().type().name())) {
-					keys.add(pair.key() + ".id");
-					keys.add(pair.key() + ".type");
-					for (String key : pair.value().asRelationship().keys()) {
-						keys.add(pair.key() + "." + key);
-					}
-				}
-			}
-			this.flattened = true;
-		} else if (this.iterator != null) {
-			//Keys are exactly the ones returned from the iterator
+		if (this.iterator != null && this.iterator.hasNext() && this.iterator.peek() != null) {
 			this.keys = this.iterator.keys();
 		}
 
@@ -102,19 +81,6 @@ public class BoltResultSet extends ResultSet implements Loggable {
 		this.holdability = params.length > 2 ? params[2] : CLOSE_CURSORS_AT_COMMIT;
 
 		this.metaData = InstanceFactory.debug(BoltResultSetMetaData.class, new BoltResultSetMetaData(this.iterator, this.keys), this.isLoggable());
-	}
-
-	private boolean flatteningTypes(StatementResult statementResult) {
-		boolean result = true;
-
-		for (Pair<String, Value> pair : statementResult.peek().fields()) {
-			if (!ACCEPTED_TYPES_FOR_FLATTENING.contains(pair.value().type().name())) {
-				result = false;
-				break;
-			}
-		}
-
-		return result;
 	}
 
 	@Override public boolean next() throws SQLException {
@@ -266,42 +232,10 @@ public class BoltResultSet extends ResultSet implements Loggable {
 		return this.fetchValueFromLabel(columnLabel).asBoolean();
 	}
 
-	private Value fetchPropertyValue(String key, String property) throws SQLException {
-		Value value;
-		try {
-			if ("id".equals(property)) {
-				//id requested
-				value = new IntegerValue(this.current.get(key).asEntity().id());
-			} else if ("labels".equals(property)) {
-				//node's labels requested
-				Node node = this.current.get(key).asNode();
-				List<Value> values = new ArrayList<>();
-				for (String label : node.labels()) {
-					values.add(new StringValue(label));
-				}
-				value = new ListValue(values.toArray(new Value[values.size()]));
-			} else if ("type".equals(property)) {
-				//Relationship's type requested
-				value = new StringValue(this.current.get(key).asRelationship().type());
-			} else {
-				//Property requested
-				value = this.current.get(key).get(property);
-			}
-		} catch (Exception e) {
-			throw new SQLException("Column not present in ResultSet");
-		}
-		return value;
-	}
-
 	private Value fetchValueFromLabel(String label) throws SQLException {
 		Value value;
 		if (this.current.containsKey(label)) {
-			//Requested value is not flattened
 			value = this.current.get(label);
-		} else if (this.flattened && this.keys.contains(label)) {
-			//Requested value is flattened
-			String[] keys = label.split("\\.");
-			value = this.fetchPropertyValue(keys[0], keys[1]);
 		} else {
 			//No value found
 			throw new SQLException("Column not present in ResultSet");
@@ -312,17 +246,7 @@ public class BoltResultSet extends ResultSet implements Loggable {
 
 	private Value fetchValueFromIndex(int index) throws SQLException {
 		Value value;
-		if (this.flattened && index > 0 && index - 1 <= this.keys.size()) {
-			//Requested value is to be considered from flattened results
-			String[] keys = this.keys.get(index - 1).split("\\.");
-			if (keys.length > 1) { //Requested value is a virtual column
-				value = this.fetchPropertyValue(keys[0], keys[1]);
-			} else {
-				//Requested value is the node/relationship itself
-				value = this.current.get(index - 1);
-			}
-		} else if (index > 0 && index - 1 <= this.current.size()) {
-			//Requested value is not flattened
+		if (index > 0 && index - 1 <= this.current.size()) {
 			value = this.current.get(index - 1);
 		} else {
 			//No value found
