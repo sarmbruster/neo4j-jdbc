@@ -235,15 +235,8 @@ public class BoltResultSet extends ResultSet implements Loggable {
 	}
 
 	private Value fetchValueFromLabel(String label) throws SQLException {
-		Value value;
-		if (this.current.containsKey(label)) {
-			value = this.current.get(label);
-		} else {
-			//No value found
-			throw new SQLException("Column not present in ResultSet");
-		}
-		this.wasNull = value.isNull();
-		return value;
+		int columnIndex = findColumn(label);
+		return fetchValueFromIndex(columnIndex);
 	}
 
 	private Value fetchValueFromIndex(int index) throws SQLException {
@@ -348,7 +341,7 @@ public class BoltResultSet extends ResultSet implements Loggable {
 	/**
 	 * Convert an Object to a list.
 	 *
-	 * @param obj The object to convert (must be a list of Node/Relationship or a Path
+	 * @param obj The object to convert (must be a list of Node/Relationship or a Path)
 	 * @return The corresponding List
 	 * @throws SQLException if object cannot be cast to a list
 	 */
@@ -427,14 +420,50 @@ public class BoltResultSet extends ResultSet implements Loggable {
 
 	@Override public Object getObject(int columnIndex) throws SQLException {
 		checkClosed();
-		Object obj = this.fetchValueFromIndex(columnIndex).asObject();
-		return this.generateObject(obj);
+		Object result = null;
+		Value value = this.fetchValueFromIndex(columnIndex);
+
+		if (InternalTypeSystem.TYPE_SYSTEM.STRING().equals(value.type())) {
+			result = this.getString(columnIndex);
+		}
+		if (InternalTypeSystem.TYPE_SYSTEM.INTEGER().equals(value.type())) {
+			result = this.getLong(columnIndex);
+		}
+		if (InternalTypeSystem.TYPE_SYSTEM.BOOLEAN().equals(value.type())) {
+			result = this.getBoolean(columnIndex);
+		}
+		if (InternalTypeSystem.TYPE_SYSTEM.FLOAT().equals(value.type())) {
+			result = this.getDouble(columnIndex);
+		}
+		if (InternalTypeSystem.TYPE_SYSTEM.NODE().equals(value.type())) {
+			result = this.generateObject(value.asObject());
+		}
+		if (InternalTypeSystem.TYPE_SYSTEM.RELATIONSHIP().equals(value.type())) {
+			result = this.generateObject(value.asObject());
+		}
+		if (InternalTypeSystem.TYPE_SYSTEM.PATH().equals(value.type())) {
+			result = this.generateObject(value.asObject());
+		}
+		if (InternalTypeSystem.TYPE_SYSTEM.MAP().equals(value.type())) {
+			result = value.asMap();
+		}
+		if (InternalTypeSystem.TYPE_SYSTEM.ANY().equals(value.type())) {
+			result = value.asObject();
+		}
+		if (InternalTypeSystem.TYPE_SYSTEM.NULL().equals(value.type())) {
+			result = null;
+		}
+		if (InternalTypeSystem.TYPE_SYSTEM.LIST().equals(value.type())) {
+			result = this.objectToList(value);
+		}
+
+		return result;
 	}
 
 	@Override public Object getObject(String columnLabel) throws SQLException {
 		checkClosed();
-		Object obj = this.fetchValueFromLabel(columnLabel).asObject();
-		return this.generateObject(obj);
+		int colIndex = this.findColumn(columnLabel);
+		return this.getObject(colIndex);
 	}
 
 	public StatementResult getIterator() {

@@ -700,7 +700,7 @@ public class BoltResultSetGettersTest {
 		}, resultSet.getObject(1));
 	}
 
-	@Test public void getObjectShouldReturnCorrectPathAsMap() throws SQLException {
+	@Test public void getObjectShouldReturnCorrectPathAsListOfMap() throws SQLException {
 		StatementResult statementResult = ResultSetData
 				.buildResultCursor(ResultSetData.KEYS_RECORD_LIST_MORE_ELEMENTS_PATHS, ResultSetData.RECORD_LIST_MORE_ELEMENTS_PATHS);
 		ResultSet resultSet = new BoltResultSet(null, statementResult);

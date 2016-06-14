@@ -28,6 +28,7 @@ import org.neo4j.jdbc.bolt.data.StatementData;
 
 import java.sql.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -94,10 +95,11 @@ public class BoltStatementIT {
 		assertTrue(rs.next());
 
 		// Testing Meta for column type
-		//TODO: should not be an sql array ?
 		assertEquals("java.util.List", rs.getMetaData().getColumnClassName(1));
+		List<Map> list = (List<Map>) rs.getObject(1, List.class);
+		assertEquals("test", list.get(0));
 
-		// Testing Value
+		// Testing Value with array
 		java.sql.Array sqlArray = rs.getArray(1);
 		String[] javaArray = (String[]) sqlArray.getArray();
 		assertEquals("test", javaArray[0]);
@@ -117,10 +119,13 @@ public class BoltStatementIT {
 
 		assertTrue(rs.next());
 
-		// Testing Meta for column type
+		// Testing Value with object
 		assertEquals("java.util.List", rs.getMetaData().getColumnClassName(1));
+		List<Map> list = rs.getObject(1, List.class);
+		assertEquals("test", list.get(0).get("name").toString());
+		assertEquals("testAgain", list.get(0).get("surname").toString());
 
-		// Testing Value
+		// Testing value with Array
 		java.sql.Array sqlArray = rs.getArray(1);
 		Map[] javaArray = (Map[]) sqlArray.getArray();
 		assertEquals("test", javaArray[0].get("name").toString());
@@ -140,10 +145,12 @@ public class BoltStatementIT {
 
 		assertTrue(rs.next());
 
-		// Testing Meta for column type
+		// Testing value with list
 		assertEquals("java.util.List", rs.getMetaData().getColumnClassName(1));
+		List<Map> list = (List<Map>) rs.getObject(1);
+		assertEquals(Long.valueOf("1459248821051"), (Long) list.get(0).get("date"));
 
-		// Testing Value
+		// Testing value with Array
 		java.sql.Array sqlArray = rs.getArray(1);
 		Map[] javaArray = (Map[]) sqlArray.getArray();
 		assertEquals(Long.valueOf("1459248821051"), (Long) javaArray[0].get("date"));
@@ -161,6 +168,8 @@ public class BoltStatementIT {
 
 		// Testing Meta for column type
 		assertEquals("java.util.List", rs.getMetaData().getColumnClassName(1));
+		List<Map> list = (List<Map>) rs.getObject(1);
+		assertEquals(0, list.size());
 
 		// Testing Value
 		java.sql.Array sqlArray = rs.getArray(1);
