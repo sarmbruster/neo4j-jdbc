@@ -1,7 +1,5 @@
 === Knime
 
-(Thanks a lot to Benoit Simard)
-
 https://www.knime.org/knime-analytics-platform[Knime] is an open source platform for data analytics. To access data from
 a Neo4j database first go to `File|Preferences` menu, in the dialog navigate to `KNIME|databases`. Add the Neo4j JDBC
 driver jar file as shown here
